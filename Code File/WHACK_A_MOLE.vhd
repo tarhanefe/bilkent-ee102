@@ -1,0 +1,260 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity WHACK_A_MOLE is
+PORT(
+RESTART : in STD_LOGIC;
+AUDIO_SEL : in STD_LOGIC;
+VIDON : in STD_LOGIC;
+CLK : in STD_LOGIC;
+HC : in STD_LOGIC_VECTOR(10 downto 0);
+VC : in STD_LOGIC_VECTOR(10 downto 0);
+RED : out STD_LOGIC_VECTOR(3 downto 0);
+GREEN : out STD_LOGIC_VECTOR(3 downto 0);
+BLUE : out STD_LOGIC_VECTOR(3 downto 0);
+BTN : in STD_LOGIC_VECTOR(4 DOWNTO 0);
+DIF : IN STD_LOGIC
+);
+end WHACK_A_MOLE;
+
+architecture Behavioral of WHACK_A_MOLE is
+
+----------------------------
+COMPONENT MAIN_GAME_SCREEN
+PORT(
+VIDON: in STD_LOGIC;
+HC : in STD_LOGIC_VECTOR(10 downto 0);
+VC : in STD_LOGIC_VECTOR(10 downto 0);
+RED : out STD_LOGIC_VECTOR(3 downto 0);
+GREEN : out STD_LOGIC_VECTOR(3 downto 0);
+BLUE : out STD_LOGIC_VECTOR(3 downto 0);
+BTN : in STD_LOGIC_VECTOR(4 downto 0)
+);
+END COMPONENT;
+----------------------------
+COMPONENT GAME_END_BEGIN_W
+PORT(
+SEL_END_BEGIN : in STD_LOGIC;
+CLR : in STD_LOGIC;
+VIDON: in STD_LOGIC;
+HC : in STD_LOGIC_VECTOR(10 downto 0);
+VC : in STD_LOGIC_VECTOR(10 downto 0);
+RED : out STD_LOGIC_VECTOR(3 downto 0);
+GREEN : out STD_LOGIC_VECTOR(3 downto 0);
+BLUE : out STD_LOGIC_VECTOR(3 downto 0)
+);
+END COMPONENT;
+--------------------------------------
+COMPONENT GAME_CLOCK
+PORT(
+CLK : in STD_LOGIC;
+CLR : in STD_LOGIC;
+VIDON: in STD_LOGIC;
+HC : in STD_LOGIC_VECTOR(10 downto 0);
+VC : in STD_LOGIC_VECTOR(10 downto 0);
+RED : out STD_LOGIC_VECTOR(3 downto 0);
+GREEN : out STD_LOGIC_VECTOR(3 downto 0);
+BLUE : out STD_LOGIC_VECTOR(3 downto 0)
+);
+END COMPONENT;
+--------------------------------------
+COMPONENT GAME_MODE
+PORT(
+DIFFICULTY : IN STD_LOGIC;
+LVL: IN integer := 0; 
+mode_sel : in STD_LOGIC;
+CLR : in STD_LOGIC;
+VIDON: in STD_LOGIC;
+HC : in STD_LOGIC_VECTOR(10 downto 0);
+VC : in STD_LOGIC_VECTOR(10 downto 0);
+RED : out STD_LOGIC_VECTOR(3 downto 0);
+GREEN : out STD_LOGIC_VECTOR(3 downto 0);
+BLUE : out STD_LOGIC_VECTOR(3 downto 0)
+);
+END COMPONENT;
+--------------------------------------
+COMPONENT GAME_SOUNDS
+PORT(
+audio_sel : in STD_LOGIC;
+CLR : in STD_LOGIC;
+VIDON: in STD_LOGIC;
+HC : in STD_LOGIC_VECTOR(10 downto 0);
+VC : in STD_LOGIC_VECTOR(10 downto 0);
+RED : out STD_LOGIC_VECTOR(3 downto 0);
+GREEN : out STD_LOGIC_VECTOR(3 downto 0);
+BLUE : out STD_LOGIC_VECTOR(3 downto 0)
+);
+END COMPONENT;
+--------------------------------------
+COMPONENT WORD_SELECTOR
+PORT(
+SEL_WORD : in std_logic_vector(7 downto 0);
+R : in integer:= 0;
+C : in integer:= 0;
+HC : in STD_LOGIC_VECTOR (10 downto 0);
+VC : in STD_LOGIC_VECTOR (10 downto 0);
+RED : out STD_LOGIC_VECTOR (3 downto 0);
+GREEN : out STD_LOGIC_VECTOR (3 downto 0);
+BLUE : out STD_LOGIC_VECTOR (3 downto 0)
+);
+END COMPONENT;
+
+-------------------------------------------
+COMPONENT SCORE_COUNT
+PORT(
+DIF : IN STD_LOGIC;
+CLK : IN STD_LOGIC;
+RESET : IN STD_LOGIC;
+BTN : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+GAME_OVER : OUT STD_LOGIC;
+SQUARES : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+SCORE : OUT INTEGER:= 0
+);
+END COMPONENT;
+-----------------------
+COMPONENT PUSH_RELEASE IS
+PORT(
+CLK : IN STD_LOGIC;
+BTN_IN : IN STD_LOGIC;
+BTN_OUT_P : OUT STD_LOGIC;
+BTN_OUT_R : OUT STD_LOGIC
+);
+END COMPONENT;
+---------------------------
+TYPE STATE_TYPE IS (S_GAME,S_OVER,S_BEGIN,S_BLANK);
+SIGNAL STATE : STATE_TYPE;
+SIGNAL RED1,RED2,RED3,RED4,RED5 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+SIGNAL GREEN1,GREEN2,GREEN3,GREEN4,GREEN5 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+SIGNAL BLUE1,BLUE2,BLUE3,BLUE4,BLUE5 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+SIGNAL SQUARES : STD_LOGIC_VECTOR(4 DOWNTO 0);
+SIGNAL SCORE : INTEGER;
+SIGNAL CLR : STD_LOGIC := '0';
+SIGNAL SCREEN_SEL : STD_LOGIC;
+SIGNAL GAME_OVER : STD_LOGIC;
+SIGNAL RES_GM_CLK: STD_LOGIC;
+SIGNAL BTNR,BTNP : STD_LOGIC;
+BEGIN
+------------------------------------------
+BTN0 : PUSH_RELEASE PORT MAP(CLK => CLK, BTN_IN => BTN(2),BTN_OUT_P => BTNP,BTN_OUT_R => BTNR );
+-------------------------------------------
+U3: MAIN_GAME_SCREEN
+PORT MAP(
+VIDON => VIDON,
+HC => HC,
+VC => VC,
+RED => RED1,
+GREEN => GREEN1,
+BLUE => BLUE1,
+BTN => SQUARES
+);
+--------------------------------------
+U4: GAME_CLOCK
+PORT MAP(
+CLK => CLK,
+CLR => RES_GM_CLK,
+VIDON => VIDON,
+HC => HC,
+VC => VC,
+RED => RED2,
+GREEN => GREEN2,
+BLUE => BLUE2
+);
+--------------------------------------
+U5: GAME_MODE
+PORT MAP(
+DIFFICULTY => DIF,
+LVL => SCORE,
+MODE_SEL => '0',     
+CLR => CLR,
+VIDON => VIDON, 
+HC => HC,
+VC => VC,
+RED => RED3,
+GREEN => GREEN3,
+BLUE => BLUE3
+);
+--------------------------------------
+U6: GAME_SOUNDS
+PORT MAP(
+audio_sel => AUDIO_SEL,
+CLR => CLR,
+VIDON => VIDON,
+HC => HC,
+VC => VC,
+RED => RED4,
+GREEN => GREEN4,
+BLUE => BLUE4
+);
+--------------------------------------
+U8 : GAME_END_BEGIN_W
+PORT MAP(
+SEL_END_BEGIN => SCREEN_SEL,
+CLR => CLR ,
+VIDON=> VIDON,
+HC => HC,
+VC=> VC,
+RED => RED5,
+GREEN => GREEN5,
+BLUE => BLUE5
+);
+
+---------------------------------------
+UQ : SCORE_COUNT 
+PORT MAP(
+DIF => DIF,
+CLK => CLK,
+RESET => RESTART,
+BTN => BTN,
+GAME_OVER => GAME_OVER,
+SQUARES => SQUARES,
+SCORE => SCORE
+);
+---------------------------------------
+PROCESS(CLK)
+BEGIN
+IF RESTART = '1' THEN 
+STATE <= S_BEGIN;
+ELSIF RISING_EDGE(CLK) THEN
+CASE STATE IS
+-----------------------------
+WHEN S_BEGIN => 
+SCREEN_SEL <= '0';
+RED <= RED5;
+GREEN <= GREEN5;
+BLUE <= BLUE5;
+IF BTNR = '1' THEN
+STATE <= S_BLANK;
+ELSE 
+STATE <= S_BEGIN;
+END IF;
+
+WHEN S_BLANK => 
+RED <= "0000";
+GREEN <= "0000";
+BLUE <= "0000";
+STATE <= S_GAME;
+RES_GM_CLK <= '1';
+
+WHEN S_GAME =>
+RES_GM_CLK <= '0';
+RED <= RED1 OR RED2 OR RED3 OR RED4;
+GREEN <= GREEN1 OR GREEN2 OR GREEN3 OR GREEN4;
+BLUE <= BLUE1 OR BLUE2 OR BLUE3 OR BLUE4;
+IF GAME_OVER = '1' THEN
+STATE <= S_OVER;
+ELSE 
+STATE <= S_GAME;
+END IF;
+-----------------------------
+WHEN S_OVER =>
+SCREEN_SEL <= '1';
+RED <= RED5;
+GREEN <= GREEN5;
+BLUE <= BLUE5;
+STATE <= S_OVER;
+END CASE;
+END IF;
+END PROCESS; 
+
+end Behavioral;
