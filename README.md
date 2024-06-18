@@ -37,9 +37,9 @@ The primary goal of this project is to develop a digital game, Whack-A-Mole, usi
 ## Project Documents:
 
 
-- [Project Proposal](https://github.com/tarhanefe/bilkent-ee102/blob/main/Proposal/Efe%20Tarhan%20EE102%20Project%20Proposal.pdf)
-- [Project Final Report](https://github.com/tarhanefe/bilkent-ee102/blob/main/Final%20Report/EFE%20TARHAN%20EE102%20TERM%20PROJECT%20REPORT.pdf)
-- [Project Codes](https://github.com/tarhanefe/bilkent-ee102/tree/main/Code%20File)
+- [Project Proposal](https://github.com/tarhanefe/bilkent-ee102/blob/main/Project/Proposal/Efe%20Tarhan%20EE102%20Project%20Proposal.pdf)
+- [Project Final Report](https://github.com/tarhanefe/bilkent-ee102/blob/main/Project/Final%20Report/EFE%20TARHAN%20EE102%20TERM%20PROJECT%20REPORT.pdf)
+- [Project Codes](https://github.com/tarhanefe/bilkent-ee102/tree/main/Project/Code%20File)
 
 
 
